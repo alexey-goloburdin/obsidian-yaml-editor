@@ -24,7 +24,8 @@ class YamlBlockNotFound(Exception):
 
 def update_yaml_field(data: dict) -> dict:
     """
-    Обновляет одно yaml поле
+    Обновляет одно yaml поле — кастомная логика. Можно просто вывести все значения
+    этого поля или изменить эти значения — все или некоторые.
     """
     updated_data = dict(data)
     if not updated_data.get("Progress"):
