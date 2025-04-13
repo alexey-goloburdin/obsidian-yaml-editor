@@ -6,28 +6,29 @@ from typing import List, Tuple, Optional
 
 import yaml
 
-# Настройка логирования: вывод в stdout, уровень INFO, формат с меткой времени
 logging.basicConfig(
     level=logging.INFO,
-
     stream=sys.stdout,
     format="%(asctime)s %(levelname)s: %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S"
+    datefmt="%Y-%m-%d %H:%M:%S",
 )
 
-# Путь к директории с заметками Obsidian
 NOTES_DIRECTORY = Path("/mnt/c/Users/sterx/knowledge-base")
 
 
 class YamlBlockNotFound(Exception):
     """Исключение, сигнализирующее о том, что YAML-блок не найден в содержимом файла."""
+
     pass
 
 
-def update_yaml(data: dict) -> dict:
+def update_yaml_field(data: dict) -> dict:
+    """
+    Обновляет одно yaml поле
+    """
     updated_data = dict(data)
     if not updated_data.get("Progress"):
-        updated_data["Progress"] = '<p><progress max=0 value=0></progress></p>'
+        updated_data["Progress"] = "<p><progress max=0 value=0></progress></p>"
     return updated_data
 
 
@@ -40,7 +41,8 @@ def list_note_files(directory: Path) -> List[Path]:
     :return: Список объектов Path, соответствующих найденным файлам.
     """
     return [
-        file_path for file_path in directory.iterdir()
+        file_path
+        for file_path in directory.iterdir()
         if file_path.is_file()
         and file_path.name.startswith("Книга")
         and file_path.name.endswith(".md")
@@ -74,11 +76,9 @@ def find_yaml_block_indices(content: str) -> Tuple[Optional[int], Optional[int]]
     for idx in range(start_index + 1, len(lines)):
         if lines[idx].strip() == "---":
             end_index = idx
-
             break
 
     return start_index, end_index
-
 
 
 def extract_yaml_data(content: str) -> Tuple[dict, int, int]:
@@ -96,12 +96,11 @@ def extract_yaml_data(content: str) -> Tuple[dict, int, int]:
     start_index, end_index = find_yaml_block_indices(content)
 
     if start_index is None or end_index is None:
-
         raise YamlBlockNotFound(
             "YAML блок не найден или отсутствует закрывающий разделитель."
         )
 
-    yaml_lines = lines[start_index + 1:end_index]
+    yaml_lines = lines[start_index + 1 : end_index]
     yaml_text = "\n".join(yaml_lines)
     try:
         data = yaml.safe_load(yaml_text)
@@ -111,10 +110,9 @@ def extract_yaml_data(content: str) -> Tuple[dict, int, int]:
         raise e
 
 
-def build_updated_content(content: str,
-                          start_index: int,
-                          end_index: int,
-                          updated_yaml: str) -> str:
+def build_updated_content(
+    content: str, start_index: int, end_index: int, updated_yaml: str
+) -> str:
     """
     Собирает новое содержимое файла на основе исходных строк, обновленного YAML-блока,
     а также заданных индексов начала и конца YAML блока.
@@ -131,7 +129,7 @@ def build_updated_content(content: str,
     new_content_lines.append("---")
     new_content_lines.extend(updated_yaml.splitlines())
     new_content_lines.append("---")
-    new_content_lines.extend(lines[end_index + 1:])
+    new_content_lines.extend(lines[end_index + 1 :])
     return "\n".join(new_content_lines)
 
 
@@ -160,7 +158,7 @@ def update_yaml_content(content: str) -> str:
 
         return content
 
-    data = update_yaml(data)
+    data = update_yaml_field(data)
     updated_yaml = yaml.safe_dump(data, allow_unicode=True, sort_keys=False).strip()
     return build_updated_content(content, start_index, end_index, updated_yaml)
 
@@ -203,4 +201,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
