@@ -1,7 +1,8 @@
 from datetime import datetime
-from pathlib import Path
-import sys
 import logging
+from pathlib import Path
+import re
+import sys
 from typing import List, Tuple, Optional
 
 import yaml
@@ -14,6 +15,7 @@ logging.basicConfig(
 )
 
 NOTES_DIRECTORY = Path("/mnt/c/Users/sterx/knowledge-base")
+FILE_NAME_PATTERN = r"^Книга.*\.md$"
 
 
 class YamlBlockNotFound(Exception):
@@ -28,15 +30,18 @@ def update_yaml_field(data: dict) -> dict:
     этого поля или изменить эти значения — все или некоторые.
     """
     updated_data = dict(data)
+    print(updated_data)
+    """
     if not updated_data.get("Progress"):
         updated_data["Progress"] = "<p><progress max=0 value=0></progress></p>"
+    """
     return updated_data
 
 
 def list_note_files(directory: Path) -> List[Path]:
     """
-    Отбирает файлы в указанной директории, имена которых начинаются с 'Книга'
-    и заканчиваются на '.md'.
+    Отбирает файлы в указанной директории, имена которых соответствуют регулярному выражению.
+    Регулярное выражение определяется константой FILE_NAME_PATTERN.
 
     :param directory: Путь к директории с файлами.
     :return: Список объектов Path, соответствующих найденным файлам.
@@ -44,9 +49,7 @@ def list_note_files(directory: Path) -> List[Path]:
     return [
         file_path
         for file_path in directory.iterdir()
-        if file_path.is_file()
-        and file_path.name.startswith("Книга")
-        and file_path.name.endswith(".md")
+        if file_path.is_file() and re.match(FILE_NAME_PATTERN, file_path.name)
     ]
 
 
