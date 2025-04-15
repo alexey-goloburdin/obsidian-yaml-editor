@@ -16,6 +16,8 @@ logging.basicConfig(
 NOTES_DIRECTORY = Path("/mnt/c/Users/sterx/knowledge-base")
 FILE_NAME_PATTERN = r"^Книга.*\.md$"
 
+SAVE_CHANGES = False  # надо ли сохранять изменения файлов или просто играемся
+
 
 class YamlBlockNotFound(Exception):
     """Исключение, сигнализирующее о том, что YAML-блок не найден в содержимом файла."""
@@ -29,7 +31,6 @@ def update_yaml_field(data: dict) -> dict:
     этого поля или изменить эти значения — все или некоторые.
     """
     updated_data = dict(data)
-    print(updated_data)
     """
     if not updated_data.get("Progress"):
         updated_data["Progress"] = "<p><progress max=0 value=0></progress></p>"
@@ -182,6 +183,9 @@ def process_file(file_path: Path) -> None:
         return
 
     updated_content = update_yaml_content(content)
+
+    if not SAVE_CHANGES:
+        return
 
     if updated_content != content:
         try:
